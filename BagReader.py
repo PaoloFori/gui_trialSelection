@@ -13,6 +13,7 @@ class BagReader:
                           'nsecs':[], 'nose_coords':[], 'distance_left2nose':[], 'distance_right2nose':[], 'seq':[], 'id_trial': []}
         self.trials_cue = {'left_coords':[], 'right_coords':[], 'face_image' : [], 'right_radius':[], 'left_radius':[], 'blink':[], 'count_blink':[],
                            'nsecs':[], 'nose_coords':[], 'distance_left2nose':[], 'distance_right2nose':[], 'seq':[], 'id_trial': []}
+        self.trials_to_keep = []
         self.read_bag()
         self.merge_data()
 
@@ -33,7 +34,7 @@ class BagReader:
                 c_count_blink = msg.count_frame_blinking
                 c_distance_left2nose = msg.distance_left
                 c_distance_right2nose = msg.distance_right
-                c_img = msg.image
+                c_img = msg.face_image
                 c_radius_r = msg.right_radius
                 c_radius_l = msg.left_radius
                 c_seq = msg.header.seq
@@ -55,6 +56,8 @@ class BagReader:
                 c_event = msg.event
                 self.event_info['event'].append(c_event)
                 self.event_info['nsecs'].append(c_nsecs)
+            if topic == "/cvsa/trials_keep":
+                self.trials_to_keep = msg.trials_to_keep
 
         bag.close()
 
@@ -188,3 +191,6 @@ class BagReader:
 
     def get_event_info(self):
         return self.event_info
+    
+    def get_trials_to_keep(self):
+        return self.trials_to_keep

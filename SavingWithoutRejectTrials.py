@@ -4,21 +4,40 @@ import scipy.io as sio
 
 class Header:
     def __init__(self):
+        self.EVENT = Event()
+
+    def configure(self, typ, pos, dur):
+        self.EVENT.configure(typ, pos, dur)
+    
+    def setTyp(self, typ):
+        self.EVENT.setTyp(typ)
+
+    def setPos(self, pos):
+        self.EVENT.setPos(pos)
+
+    def setDur(self, dur):
+        self.EVENT.setDur(dur)
+        
+    def getTyp(self):
+        return self.EVENT.TYP
+        
+class Event:
+    def __init__(self):
         self.TYP = []
         self.POS = []
         self.DUR = []
-
+        
     def configure(self, typ, pos, dur):
         self.TYP = typ
         self.POS = pos
         self.DUR = dur
-    
+        
     def setTyp(self, typ):
         self.TYP = typ
-
+        
     def setPos(self, pos):
         self.POS = pos
-
+        
     def setDur(self, dur):
         self.DUR = dur
 
@@ -27,7 +46,8 @@ class SavingWithoutRejectionTrials:
     def __init__(self, path, n_trials=20):
         self.path = path
         self.OFF = 32768
-        self.event_id = [730,731,781,786,897,898]
+        self.start_trial_id = 1
+        self.event_id = [730,731,738,781,786,897,898]
         self.header = Header()
         self.n_trials = n_trials
 
@@ -54,45 +74,48 @@ class SavingWithoutRejectionTrials:
         POS = []
         DUR = []
 
+        c_new_event = False
+        inTrial = False
         for i in range(len(c_annotations)):
-            if i == 0:
-                TYP.append(1)
+            if c_annotations[i][1] == self.start_trial_id:
+                inTrial = True
+            elif c_annotations[i][1] == self.start_trial_id + self.n_trials:
+                inTrial = False
+            if c_annotations[i][1] in self.event_id and inTrial:
+                c_new_event = True
+                c_event = c_annotations[i][1]
+                TYP.append(c_annotations[i][1])
                 POS.append(c_annotations[i][0])
-                DUR.append(len(self.signal) - c_annotations[i][0])
-            else:
-                if c_annotations[i][1] in self.event_id:
-                    c_event = c_annotations[i][1]
-                    TYP.append(c_annotations[i][1])
-                    POS.append(c_annotations[i][0])
-                    c_start = c_annotations[i][0]
-                elif c_annotations[i][1] == c_event + self.OFF:
-                    c_end = c_annotations[i][0]
-                    DUR.append(c_end - c_start)
+                c_start = c_annotations[i][0]
+            elif c_new_event and c_annotations[i][1] == c_event + self.OFF and inTrial:
+                c_end = c_annotations[i][0]
+                DUR.append(c_end - c_start)
+                c_new_event = False
 
         self.header.configure(TYP, POS, DUR)
     
     def save(self, output_path, trials_selected):
         self.trials_selected = trials_selected
 
-        fix = [index for index, element in enumerate(self.header.TYP) if element == 786]
-        cue = [index for index, element in enumerate(self.header.TYP) if (element == 730 or element == 731)]
-        cf  = [index for index, element in enumerate(self.header.TYP) if element == 781]
-        hit = [index for index, element in enumerate(self.header.TYP) if (element == 897 or element == 898)]
+        fix = [index for index, element in enumerate(self.header.getTyp()) if element == 786]
+        cue = [index for index, element in enumerate(self.header.getTyp()) if (element == 730 or element == 731)]
+        cf  = [index for index, element in enumerate(self.header.getTyp()) if element == 781]
+        hit = [index for index, element in enumerate(self.header.getTyp()) if (element == 897 or element == 898)]
 
-        for i in range(len(fix)):
+        for i in range(len(hit)):
             if not self.trials_selected[i]:
-                self.header.TYP[fix[i]] = 0
-                self.header.POS[fix[i]] = 0
-                self.header.DUR[fix[i]] = 0
-                self.header.TYP[cue[i]] = 0
-                self.header.POS[cue[i]] = 0
-                self.header.DUR[cue[i]] = 0
-                self.header.TYP[cf[i]]  = 0
-                self.header.POS[cf[i]]  = 0
-                self.header.DUR[cf[i]]  = 0
-                self.header.TYP[hit[i]] = 0
-                self.header.POS[hit[i]] = 0
-                self.header.DUR[hit[i]] = 0
+                self.header.EVENT.TYP[fix[i]] = 0
+                self.header.EVENT.POS[fix[i]] = 0
+                self.header.EVENT.DUR[fix[i]] = 0
+                self.header.EVENT.TYP[cue[i]] = 0
+                self.header.EVENT.POS[cue[i]] = 0
+                self.header.EVENT.DUR[cue[i]] = 0
+                self.header.EVENT.TYP[cf[i]]  = 0
+                self.header.EVENT.POS[cf[i]]  = 0
+                self.header.EVENT.DUR[cf[i]]  = 0
+                self.header.EVENT.TYP[hit[i]] = 0
+                self.header.EVENT.POS[hit[i]] = 0
+                self.header.EVENT.DUR[hit[i]] = 0
 
         
         sio.savemat(output_path, {'signal': self.signal, 'header': self.header})

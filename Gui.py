@@ -13,7 +13,7 @@ from AutomaticSelection import AutomaticSelection
 from SavingWithoutRejectTrials import SavingWithoutRejectionTrials
 
 class Gui:
-    def __init__(self, trials_cue, trials_cf, n_trials, samplingRate_video, file_name, dir_gdf, dir_save, video_size=(500,500)):
+    def __init__(self, trials_cue, trials_cf, trials_to_keep, n_trials, samplingRate_video, file_name, dir_gdf, dir_save, video_size=(500,500)):
         self.n_trials = n_trials
         self.trials_cf = trials_cf
         self.trials_cue = trials_cue
@@ -22,8 +22,6 @@ class Gui:
         self.file_name = file_name
         self.dir_gdf = dir_gdf
         self.dir_save = dir_save
-
-        self.autoselection = AutomaticSelection(trials_cf)
         
 
         # create the window
@@ -51,9 +49,7 @@ class Gui:
         [self.video_buttons_cue, self.video_buttons_cf] = self.buttonsVideo()
 
         self.auto_selection = self.buttonAuto()
-
-        self.threshold_value = self.tresholdBar()
-        self.autoselection_val = [False] * self.n_trials
+        self.trials_to_keep = trials_to_keep
 
         self.saveButton()
 
@@ -81,18 +77,6 @@ class Gui:
     def saveButton(self):
         button = tk.Button(self.display, text="Save and next", command=self.callback_save)
         button.grid(row=3, column=3)
-        
-    def callBack_slider(self, val):
-        self.threshold_value = int(val)
-        self.autoselection.set_tresholds(self.threshold_value, self.threshold_value)
-        self.autoselection.compute_rejection()
-        self.autoselection_val = self.autoselection.get_trialNOTrejected()
-
-    def tresholdBar(self):
-        self.threshold = tk.Scale(self.display, from_=0, to=10, orient='vertical', label='Threshold', length=100, command=self.callBack_slider)
-        self.threshold.grid(row=1, column=3)
-        self.threshold.set(0)
-        return 0
     
     def callback_tick(self):
         for i, var in enumerate(self.var_checkbutton):
@@ -117,7 +101,7 @@ class Gui:
     def callBack_auto(self):
         if self.auto_selection.get():
             for i in range(self.n_trials):
-                if self.autoselection_val[i]:
+                if self.trials_to_keep[i]:
                     self.var_checkbutton[i].set(True)
                     self.selected_trials[i] = True
                 else:
@@ -149,12 +133,25 @@ class Gui:
                        (10, 30), cv.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
             cv.putText(image_data, f"Distance right: {c_distance_right2nose[i]}", 
                        (10, 60), cv.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
+            
             cv.putText(image_data, f"right coords: {c_right_coords[i][0]}, {c_right_coords[i][1]},", (10, 90), 
                        cv.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
             cv.putText(image_data, f"left coords: {c_left_coords[i][0]}, {c_left_coords[i][1]}", (10, 120), 
                        cv.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
+            
             cv.putText(image_data, f"Blink: {c_blink[i]}", (10, 150), cv.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
             '''
+            
+            cv.circle(image_data, (int(c_right_coords[i][0]), int(c_right_coords[i][1])), 5, (0, 0, 255), -1)
+            cv.circle(image_data, (int(c_left_coords[i][0]),  int(c_left_coords[i][1])), 5, (0, 0, 255), -1)
+            
+            # reshape to have always the same size
+            if i == 0:
+                c_h = c_image.height
+                c_w = c_image.width
+            else:
+                image_data = cv.resize(image_data, (c_w, c_h))
+                
             pil_image = PILImage.fromarray(image_data)
             pil_image = pil_image.resize(self.video_size, PIL.Image.Resampling.LANCZOS)
             tk_image = ImageTk.PhotoImage(image=pil_image)
