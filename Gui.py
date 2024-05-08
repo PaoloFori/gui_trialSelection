@@ -8,8 +8,6 @@ import math
 from time import sleep
 import cv2 as cv
 
-from AutomaticSelection import AutomaticSelection
-
 from SavingWithoutRejectTrials import SavingWithoutRejectionTrials
 
 class Gui:
