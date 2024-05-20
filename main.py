@@ -4,10 +4,11 @@ from BagReader import BagReader
 import os
 from OnlineSelection import OnlineSelection
 
+subject = 'c7'
 
-dir_bag = '/home/paolo/cvsa_ws/record/d6/bag'
-dir_gdf = '/home/paolo/cvsa_ws/record/d6/gdf'
-dir_mat = '/home/paolo/cvsa_ws/record/d6/mat_selectedTrials'
+dir_bag = '/home/paolo/cvsa_ws/record/' + subject + '/bag'
+dir_gdf = '/home/paolo/cvsa_ws/record/' + subject + '/gdf'
+dir_mat = '/home/paolo/cvsa_ws/record/' + subject + '/mat_selectedTrials'
 
 for c_file in os.listdir(dir_bag):
     if c_file.endswith(".bag"):

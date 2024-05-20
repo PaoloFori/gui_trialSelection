@@ -140,8 +140,8 @@ class Gui:
             cv.putText(image_data, f"Blink: {c_blink[i]}", (10, 150), cv.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
             '''
             
-            cv.circle(image_data, (int(c_right_coords[i][0]), int(c_right_coords[i][1])), 5, (0, 0, 255), -1)
-            cv.circle(image_data, (int(c_left_coords[i][0]),  int(c_left_coords[i][1])), 5, (0, 0, 255), -1)
+            cv.circle(image_data, (int(c_right_coords[i][0]), int(c_right_coords[i][1])), 5, (0, 0, 255), 1)
+            cv.circle(image_data, (int(c_left_coords[i][0]),  int(c_left_coords[i][1])), 5, (0, 0, 255), 1)
             
             # reshape to have always the same size
             if i == 0:
@@ -185,7 +185,7 @@ class Gui:
         tk.Message(self.display, text="Cues").grid(row=0, column=1)
         tk.Message(self.display, text="Continous feedback").grid(row=0, column=2)
         for i in range(self.n_trials):
-            c_button_cue = tk.Button(self.display, text=f"Trial {i}", command=lambda idx = i : self.callBack_video(idx, 0))
+            c_button_cue = tk.Button(self.display, text=f"{self.trials_cue['target'][i]}", command=lambda idx = i : self.callBack_video(idx, 0))
             c_button_cue.grid(row=i+1, column=1)
             c_button_cf = tk.Button(self.display, text=f"Trial {i}", command=lambda idx = i : self.callBack_video(idx, 1))
             c_button_cf.grid(row=i+1, column=2)

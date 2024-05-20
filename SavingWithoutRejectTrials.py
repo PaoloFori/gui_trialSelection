@@ -47,7 +47,7 @@ class SavingWithoutRejectionTrials:
         self.path = path
         self.OFF = 32768
         self.start_trial_id = 1
-        self.event_id = [730,731,738,781,786,897,898]
+        self.event_id = [1, 730,731,738,781,786,897,898]
         self.header = Header()
         self.n_trials = n_trials
 
@@ -87,6 +87,8 @@ class SavingWithoutRejectionTrials:
                 TYP.append(c_annotations[i][1])
                 POS.append(c_annotations[i][0])
                 c_start = c_annotations[i][0]
+                if c_event == 1:
+                    DUR.append(0)
             elif c_new_event and c_annotations[i][1] == c_event + self.OFF and inTrial:
                 c_end = c_annotations[i][0]
                 DUR.append(c_end - c_start)
@@ -97,13 +99,17 @@ class SavingWithoutRejectionTrials:
     def save(self, output_path, trials_selected):
         self.trials_selected = trials_selected
 
-        fix = [index for index, element in enumerate(self.header.getTyp()) if element == 786]
-        cue = [index for index, element in enumerate(self.header.getTyp()) if (element == 730 or element == 731)]
-        cf  = [index for index, element in enumerate(self.header.getTyp()) if element == 781]
-        hit = [index for index, element in enumerate(self.header.getTyp()) if (element == 897 or element == 898)]
+        start = [index for index, element in enumerate(self.header.getTyp()) if element == 1]
+        fix   = [index for index, element in enumerate(self.header.getTyp()) if element == 786]
+        cue   = [index for index, element in enumerate(self.header.getTyp()) if (element == 730 or element == 731)]
+        cf    = [index for index, element in enumerate(self.header.getTyp()) if element == 781]
+        hit   = [index for index, element in enumerate(self.header.getTyp()) if (element == 897 or element == 898)]
 
         for i in range(len(hit)):
             if not self.trials_selected[i]:
+                self.header.EVENT.TYP[start[i]] = 0
+                self.header.EVENT.POS[start[i]] = 0
+                self.header.EVENT.DUR[start[i]] = 0
                 self.header.EVENT.TYP[fix[i]] = 0
                 self.header.EVENT.POS[fix[i]] = 0
                 self.header.EVENT.DUR[fix[i]] = 0
@@ -116,7 +122,10 @@ class SavingWithoutRejectionTrials:
                 self.header.EVENT.TYP[hit[i]] = 0
                 self.header.EVENT.POS[hit[i]] = 0
                 self.header.EVENT.DUR[hit[i]] = 0
-
+                
+        self.header.EVENT.TYP = np.reshape(np.array([self.header.EVENT.TYP]), (len(self.header.EVENT.TYP),1))
+        self.header.EVENT.POS = np.reshape(np.array([self.header.EVENT.POS]), (len(self.header.EVENT.POS),1))
+        self.header.EVENT.DUR = np.reshape(np.array([self.header.EVENT.DUR]), (len(self.header.EVENT.DUR),1))
         
         sio.savemat(output_path, {'signal': self.signal, 'header': self.header})
 

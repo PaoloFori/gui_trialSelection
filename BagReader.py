@@ -12,7 +12,7 @@ class BagReader:
         self.trials_cf = {'left_coords':[], 'right_coords':[], 'face_image' : [], 'right_radius':[], 'left_radius':[], 'blink':[], 'count_blink':[], 
                           'nsecs':[], 'nose_coords':[], 'distance_left2nose':[], 'distance_right2nose':[], 'seq':[], 'id_trial': []}
         self.trials_cue = {'left_coords':[], 'right_coords':[], 'face_image' : [], 'right_radius':[], 'left_radius':[], 'blink':[], 'count_blink':[],
-                           'nsecs':[], 'nose_coords':[], 'distance_left2nose':[], 'distance_right2nose':[], 'seq':[], 'id_trial': []}
+                           'nsecs':[], 'nose_coords':[], 'distance_left2nose':[], 'distance_right2nose':[], 'seq':[], 'id_trial': [], 'target': []}
         self.trials_to_keep = []
         self.read_bag()
         self.merge_data()
@@ -77,6 +77,7 @@ class BagReader:
                 cf_end.append(self.event_info['nsecs'][i])
             if self.event_info['event'][i] in [730, 731]:
                 cue_start.append(self.event_info['nsecs'][i])
+                self.trials_cue['target'].append(self.event_info['event'][i])
             if self.event_info['event'][i] in [730+32768, 731+32768]:
                 cue_end.append(self.event_info['nsecs'][i])
 
