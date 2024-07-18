@@ -4,7 +4,7 @@ from BagReader import BagReader
 import os
 from OnlineSelection import OnlineSelection
 
-subject = 'h7'
+subject = 'c7_vis'
 
 dir_bag = '/home/paolo/cvsa_ws/record/' + subject + '/bag'
 dir_gdf = '/home/paolo/cvsa_ws/record/' + subject + '/gdf'
